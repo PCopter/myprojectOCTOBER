@@ -1,0 +1,32 @@
+
+{% extends 'app_general/components/base.html'%}
+
+{% block site_title %}
+Login
+{% endblock %}
+
+{% block content %}
+<section class="content-section content-section-single">
+    <div class="content-container content-container-narrow">
+        <h2 class="content-title">Login</h2>
+        <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            {{ form.as_p}}
+            {% if request.GET.next %}
+                <input type="hidden" name = "next" value="{{request.GET.next}}">
+            {% endif %}
+
+            <p>
+                <button class="button button-primary" type="submit">Login</button>
+            </p>
+            <p>
+                <a href="{% url 'register' %}">Register</a>
+            </p>
+            <p>
+                <a href="{% url 'password_reset' %}">Forget Password</a>
+            </p>
+        </form>
+ 
+    </div>
+</section>
+{% endblock %}

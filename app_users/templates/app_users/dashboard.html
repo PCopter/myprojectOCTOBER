@@ -1,0 +1,23 @@
+{% extends 'app_general/components/base.html'%}
+
+{% block site_title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+<section class="content-section content-section-single">
+    <div class="content-container content-container-narrow">
+        <h2 class="content-title">Hello {{user.username}}</h2>
+        <p>
+            <a href="{% url 'dashboard'%}">Dashboard</a>
+            <a href="{% url 'profile'%}">Profile</a>
+            <a href="{% url 'password_change'%}">ChangePassword</a>
+        </p>
+        </form>
+        <div>
+            Dashboard
+        </div>
+ 
+    </div>
+</section>
+{% endblock %}

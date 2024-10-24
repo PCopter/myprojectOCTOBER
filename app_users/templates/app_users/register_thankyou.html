@@ -1,0 +1,19 @@
+{% extends 'app_general/components/base.html'%}
+
+{% block site_title %}
+ขอบคุณสำหรับการสมัคร
+{% endblock %}
+
+{% block content %}
+<section class="content-section content-section-single">
+    <div class="content-container content-container-narrow">
+        <h2 class="content-title">ขอบคุณสำหรับการสมัคร</h2>
+        
+        <p>Please Check in your Email. และกดลิ้งค์เพื่อยืนยัน แอคเค้าท์</p>
+        <p>
+            <a class="button button-primary" href="{% url 'login' %}">กลับสู่หน้า login</a>
+        </p>
+ 
+    </div>
+</section>
+{% endblock %}
