@@ -1,0 +1,16 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+Send Mail Success
+{% endblock %}
+
+{% block content %}
+<section class="content-section">
+    <h1 class="content-title text-center">Email Sent Successfully!</h1>
+    <p class="text-center">Emails have been sent to the stakeholders.</p>
+    <div class="text-center">
+        <a href="{% url 'country_list' %}" class="button button-primary">Back to Country List</a>
+    </div>
+</section>
+{% endblock %}

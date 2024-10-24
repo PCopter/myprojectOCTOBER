@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Certificate Status Update</title>    
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .status-caution {
+            background-color: #f5f4b8; /* Light yellow */
+            color: rgb(136, 127, 4);
+        }
+
+        .status-serious {
+            background-color: #ffe5cc; /* Light orange */
+            color: orange;
+        }
+
+        .status-critical {
+            background-color: #ffcccc; /* Light red */
+            color: red;
+        }
+
+        .status-expired {
+            background-color: #1b1b1b; /* Dark red */
+            color: rgb(214, 214, 214);
+        }
+
+        .status-discont{
+            background-color: #f8a6f8; /* Dark red */
+            color: rgb(210, 0, 252);
+        }
+    </style>
+</head>
+<body>
+    <h1>Certificate Update for {{ country.name }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Certificate Number</th>
+                <th>Status</th>
+                <th>Issue Date</th>
+                <th>Expiry Date</th>
+                <th>Days Until Expired</th>
+                <th>Indoor Models</th>
+                <th>Outdoor Models</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for certificate in certificates %}
+                <tr>
+                    <td><a href="{{ certificate.certificate_no_link }}">{{ certificate.certificate_no }}</a></td>
+                    <td class="{% if certificate.status == 'caution' %}status-caution{% elif certificate.status == 'serious' %}status-serious{% elif certificate.status == 'critical' %}status-critical{% elif certificate.status == 'discont' %}status-discont{% elif certificate.status == 'expired' %}status-expired{% endif %}">{{ certificate.status }}</td>
+                    <td>{{ certificate.issue_date|date:"j M Y" }}</td>
+                    <td>{{ certificate.expire_date|date:"j M Y" }}</td>
+                    <td>{{ certificate.days_until_expiry }}</td>
+                    <td>
+                        <ul>
+                        {% for indoor_model in certificate.indoor_models %}
+                            <li>{{ indoor_model }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <td>
+                        <ul>
+                            {% for outdoor_model in certificate.outdoor_models %}
+                                <li>{{ outdoor_model }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

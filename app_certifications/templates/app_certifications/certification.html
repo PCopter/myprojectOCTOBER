@@ -1,0 +1,44 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+    Certification {{ certification.id }}
+{% endblock %}
+
+{% block content %}
+<section class="content-section content-section-single">
+    <div class="content-container">
+        {% if certification %}
+        <div class="grid grid-2">
+            <img class="image-block" src="{% static certification.image_relative_url %}">
+
+            <div>
+                <h3>Certification ID: {{ certification.id }}</h3>
+                <p>ประเทศ: {{ certification.country }}</p>
+                <p>ชื่อใบอนุญาต: {{ certification.certificate_name }}</p>
+                <p>หมายเลขใบอนุญาต: {{ certification.certificate_no }}</p>
+                <p>Indoor Models: {{ certification.indoor_models }}</p>
+                <p>Outdoor Models: {{ certification.outdoor_models }}</p>
+                <p>วันที่ออกใบอนุญาต: {{ certification.issue_date|date:"F j, Y" }}</p>
+                <p>วันหมดอายุ: {{ certification.expire_date|date:"F j, Y" }}</p>
+                <p>สถานะ: 
+                    {% if certification.status == 'activate' %}
+                        <span class="status-activating">Activating</span>
+                    {% elif certification.status == 'risk' %}
+                        <span class="status-risk">Risk</span>
+                    {% elif certification.status == 'alert' %}
+                        <span class="status-alert">Alert</span>
+                    {% endif %}
+                </p>
+                <p>Premium: {{ certification.is_premium|yesno:"Yes,No" }}</p>
+
+                <a class="button" href="{% url 'certifications' %}">Back</a>
+            </div>
+        </div>
+        {% else %}
+            <p>ไม่พบข้อมูลใบอนุญาตนี้</p>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

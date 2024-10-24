@@ -1,0 +1,170 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+Countries informations
+{% endblock %}
+
+{% block content %}
+<section class="content-section">
+    <h1 class="content-title text-center">Countries informations</h1>
+    
+    
+    <input style="margin-bottom: 10px;" type="text" id="searchInput" onkeyup="filterCards()" placeholder="Search for countries..">
+
+    <div class="content-container">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        
+        <!-- Start Card View -->
+        <div class="body-cardview">
+            <div class="container" id="cardContainer">
+                {% for country in countries %}
+                    <div class="card" data-name="{{ country.name }}">
+                        <div class="content">
+                            <div class="img">
+                                <!-- <a href="{% url 'certification_list' country.name %}">
+                                    <img src="{% static country.image_relative_url %}" alt="{{ country.name }}">
+                                </a> -->
+                                <img src="{% static country.image_relative_url %}" alt="{{ country.name }}">
+                            </div>
+                            <div class="cardContent">
+
+                                <h3 >{{ country.name }}<br></h3>
+
+                                <div class="text-center total-count">
+                                    <span>
+                                        <i class="fa fa-database icon" aria-hidden="true" onclick="showPopup('database-{{ country.id }}')"></i>
+                                    </span>
+
+                                    <span>
+                                        <i class="fa fa-calendar icon" aria-hidden="true" onclick="showPopup('calendar-{{ country.id }}')"></i>
+                                    </span>
+                                    
+                                    <span>
+                                        <i class="fa fa-address-book icon" aria-hidden="true" onclick="showPopup('address-{{ country.id }}')"></i>
+                                    </span>
+                                </div>
+                                                                
+                                <div class="text-center total-count">                                    
+                                    <span class="text-center" style="font-size: 16px;"><a href="{% url 'send_manual_email' country.id %}" class="button button-primary">Send Email</a></span>                                   
+                                </div>
+
+                                <!-- Popup for displaying certification info -->
+                                <div id="popup-database-{{ country.id }}" class="data-popup">
+                                    <div class="popup-content">
+                                        <span class="close" onclick="hidePopup('database-{{ country.id }}')">&times;</span>
+                                        <h6>Certificate Information of {{ country.name }}</h6>
+                                        <h6 style=" font-size: 14px;" class="total-count">{{ country.certification_count }} : Certificates</h6>
+                                        <h6 style=" font-size: 14px;"class="total-count">{{ country.certificate_number_count }} : Certificate numbers</h6>
+                                        <!-- Display status counts -->
+                                        <h6 style="font-size: 12px;" class="total-count status-activating">{{ country.status_counts.activating }} : Activating</h6>
+                                        <h6 style="font-size: 12px;" class="total-count status-caution">{{ country.status_counts.caution }} : Caution</h6>
+                                        <h6 style="font-size: 12px;" class="total-count status-serious">{{ country.status_counts.serious }} : Serious</h6>
+                                        <h6 style="font-size: 12px;" class="total-count status-critical">{{ country.status_counts.critical }} : Critical</h6>
+                                        <h6 style="font-size: 12px;" class="total-count status-expired">{{ country.status_counts.expired }} : Expired</h6>
+                                        <h6 style="font-size: 12px;" class="total-count status-discont">{{ country.status_counts.discont }} : Discont</h6>
+                                    </div>
+                                </div>
+
+                                <!-- Popup for displaying threshold info -->
+                                <div id="popup-calendar-{{ country.id }}" class="threshold-popup">
+                                    <div class="popup-content">
+                                        <span class="close" onclick="hidePopup('calendar-{{ country.id }}')">&times;</span>
+                                        <div class="text-center">
+                                            <h6>Thresholds of {{ country.name }}</h6>
+                                            <p class="status-caution">Caution : {{ country.caution_threshold }} Days</p>
+                                            <p class="status-serious">Serious : {{ country.serious_threshold }} Days</p>
+                                            <p class="status-critical">Critical : {{ country.critical_threshold }} Days</p>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Popup for displaying stakeholders' emails -->
+                                <div id="popup-address-{{ country.id }}" class="stakeholder-popup">
+                                    <div class="popup-content">
+                                        <span class="close" onclick="hidePopup('address-{{ country.id }}')">&times;</span>
+                                        <h6>Stakeholders' emails of {{ country.name }}</h6>
+                                        <ul>
+                                            {% for stakeholder in country.stakeholders_email.all %}
+                                                <li style=" font-size: 12px;">{{ stakeholder.email }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    
+                {% endfor %}
+            </div>
+        </div>
+        <!-- End Card View -->
+    </div>
+</section>
+
+<!-- Include the JavaScript to handle card scenarios and popup -->
+<script>
+    function filterCards() {
+        var input, filter, cards, cardContainer, card, title, i;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        cardContainer = document.getElementById("cardContainer");
+        cards = cardContainer.getElementsByClassName("card");
+        for (i = 0; i < cards.length; i++) {
+            title = cards[i].getAttribute("data-name");
+            if (title.toUpperCase().indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+
+    function updateCardClasses() {   
+        var cards = document.querySelectorAll('.card');
+        cards.forEach(function(card, index) {
+            card.style.setProperty('--i', index + 1);
+        });
+    }
+
+    function showPopup(popupId) {
+        document.getElementById('popup-' + popupId).style.display = 'flex';
+    }
+
+    function hidePopup(popupId) {
+        document.getElementById('popup-' + popupId).style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCardClasses();
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            filterCards();
+            updateCardClasses();
+        });
+    });
+
+    
+</script>
+
+<!-- Add some CSS for the popup and icons -->
+<style>
+    .icon {
+        font-size: 28px; /* ขนาดไอคอน */
+        transition: transform 0.2s; /* การเปลี่ยนแปลงขนาดเมื่อ hover */
+        margin: 14px;
+        color: rgb(141, 141, 138);
+    }
+
+    .icon:hover {
+        transform: scale(1.2); /* ขยายขนาดไอคอนเมื่อ hover */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+    }
+
+    
+</style>
+
+{% endblock %}
+

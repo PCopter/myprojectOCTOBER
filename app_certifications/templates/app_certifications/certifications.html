@@ -1,0 +1,76 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+    Certifications in {{ country.name }}
+{% endblock %}
+
+{% block content %}
+<section class="content-section content-section-single">
+    <h1 class="content-title">Display Certifications in {{ country.name }}</h1>
+    <div class="content-container">
+        <div>
+            <p>Activating: {{ activating_count }}</p>
+            <p>Caution: {{ caution_count }}</p>
+            <p>Serious: {{ serious_count }}</p>
+            <p>Critical: {{ critical_count }}</p>
+        </div>
+
+        <div>
+            {% if certifications_with_expiry|length > 0 %}
+                <div class="grid grid-3">
+                    {% for item in certifications_with_expiry %}
+                        {% with certification=item.certification certificate_number=item.certificate_number %}
+                            <div>
+                                <a href="{% url 'certification' certification.id %}">
+                                    <img class="image-block" src="{% static certification.image_relative_url %}" alt="{{ certification.certificate_name }}">
+                                </a>
+
+                                <h5 class="certification-title">
+                                    <a href="{% url 'certification' certification.id %}">{{ certification.certificate_name }}</a>
+                                </h5>
+
+                                <p>Country: {{ certification.country.name }}</p>
+                                <p>Certificate Number: {{ certificate_number.certificate_no }}</p>
+                                <p>Indoor Model: 
+                                    {% for model in certificate_number.indoor_models.all %}
+                                        {{ model.name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </p>
+                                <p>Outdoor Model: 
+                                    {% for model in certificate_number.outdoor_models.all %}
+                                        {{ model.name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </p>
+                                
+                                <p>Expires on: {{ certificate_number.expire_date|date:"F j, Y" }}</p>
+
+                                <p>
+                                    {% if certificate_number.status == 'activating' %}
+                                        <span class="status-activating">Activating</span>
+                                    {% elif certificate_number.status == 'caution' %}
+                                        <span class="status-caution">Caution</span>
+                                    {% elif certificate_number.status == 'serious' %}
+                                        <span class="status-serious">Serious</span>
+                                    {% elif certificate_number.status == 'critical' %}
+                                        <span class="status-critical">Critical</span>
+                                    {% endif %}
+                                    {% if item.days_until_expiry is not None %}
+                                        {{ item.days_until_expiry }} days until expiry
+                                    {% else %}
+                                        No expiration date
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No certifications available at this moment. Please check back later.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+

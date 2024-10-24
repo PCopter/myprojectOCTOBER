@@ -1,0 +1,84 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+Certifications for {{ country.name }}
+{% endblock %}
+
+{% block content %}
+<section class="content-section">
+    <h1 class="content-title text-center">{{ country.name }} Certifications</h1>
+    
+    <input type="text" id="searchInput" onkeyup="filterCards()" placeholder="Search for certifications..">
+
+    <div class="content-container">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        
+        <!-- Start Card View -->
+        <div class="body-cardview">
+            <div class="container" id="cardContainer">
+                {% for certification in certifications %}
+                    <div class="card" data-name="{{ certification.certificate_name }}">
+                        <div class="content">
+                            <div class="img">
+                                <a href="{% url 'certifications_by_country' country.name %}">
+                                    <img src="{% static country.image_relative_url %}" alt="{{ certification.certificate_name }}">
+                                </a>
+                            </div>
+                            <div class="cardContent">
+                                
+                                <h3>{{ certification.certificate_name }}<br></h3>
+                                <p class="text-center">{{ certification.certificate_number_count }} certificates Numbers</p>
+
+                            </div>
+                        </div>
+                        <ul class="sci li-card">
+                            <li style="--i:1">
+                                <a href="{% url 'certifications_by_country' country.name %}">
+                                    <i class="fa fa-search li-card" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- End Card View -->
+    </div>
+</section>
+
+<!-- Include the JavaScript to handle card scenarios -->
+<script>
+    function filterCards() {
+        var input, filter, cards, cardContainer, card, title, i;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        cardContainer = document.getElementById("cardContainer");
+        cards = cardContainer.getElementsByClassName("card");
+        for (i = 0; i < cards.length; i++) {
+            title = cards[i].getAttribute("data-name");
+            if (title.toUpperCase().indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+
+    function updateCardClasses() {
+        var cards = document.querySelectorAll('.card');
+        cards.forEach(function(card, index) {
+            card.style.setProperty('--i', index + 1);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCardClasses();
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            filterCards();
+            updateCardClasses();
+        });
+    });
+</script>
+
+{% endblock %}

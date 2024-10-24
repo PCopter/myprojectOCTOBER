@@ -1,0 +1,673 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+List view
+{% endblock %}
+
+{% block content %}
+
+<section>
+    <div class="dashboard-container">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        
+        <!-- Side 20% -->
+        <div class="sidebar">
+            <!-- Search bar countries -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" onkeyup="filterCards()" placeholder="Search for countries...">
+            </div>
+            
+            <div class="dropdown-filter">
+                <button class="button button-primary" style="margin-bottom: -16px;">
+                    <a style="text-decoration: none; color: #ffffff;" href="{% url 'country_list' %}">Countries information & Sending mail
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                    </a>
+                </button>
+            </div>
+
+            <!-- Dropdown filter -->
+            <div class="dropdown-filter">
+                <select id="certificationFilter" onchange="filterTable()">
+                    <option value="all">All Certifications</option>     
+                    {% for certification in certifications %}
+                    <option value="{{ certification }}">{{ certification }}</option>
+                    {% endfor %}
+                </select>
+                <select id="statusFilter" onchange="filterTable()">
+                    <option value="all">All Statuses</option>
+                    {% for status in statuses %}
+                    <option value="{{ status }}">{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Country Cards -->
+            <div class="country-cards" id="cardContainer">
+                <div class="country-card card" data-name="All" data-country-id="all" onclick="filterTable('all', this)">
+                    <img src="{% static 'app_general/all.png' %}" alt="All" class="country-image">
+                    <div class="card-content">
+                        <p class="country-name">All</p>
+                        <p class="total-count">Certificates No : {{ certification_numbers.count }}</p>
+                    </div>
+                </div>
+                {% for data in country_data %}
+                <!-- {% static data.country.image_relative_url %} --> 
+                 <!-- {{ data.country.image_relative_url }}  -->
+                <div class="country-card card" data-name="{{ data.country.name }}" data-country-id="{{ data.country.id }}" onclick="filterTable({{ data.country.id }}, this)">
+                    <img src="{% static data.country.image_relative_url %}" alt="{{ data.country.name }}" class="country-image">
+                    <div class="card-content">
+                        <p class="country-name">{{ data.country.name }}</p>
+                        <p class="total-count">Certificates No : {{ data.total_count }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Side 80% -->
+        <div class="main-content">
+            <!-- Search bar for table -->
+            <div class="main-content-header">
+                <div class="search-bar">
+                    <input type="text" id="searchTableInput" onkeyup="filterTableSearch()" placeholder="Search for certificates...">
+                    <!-- Status count -->
+                    <div style="padding-top: 12px;">
+                        <span class="total" style=" background-color: #e0e0e0; padding: 3px;">Total : {{certificate_number_count}}</span>
+                        <span class="status-activating" style="padding: 3px; ">Activating : {{certificate_numbers_activating}}</span>
+                        <span class="status-caution" style="padding: 3px; ">Caution : {{certificate_numbers_caution}}</span>
+                        <span class="status-serious" style="padding: 3px; ">Serious : {{certificate_numbers_serious}}</span>
+                        <span class="status-critical" style="padding: 3px; ">Critical : {{certificate_numbers_critical}}</span>
+                        <span class="status-expired" style="padding: 3px;">Expired : {{certificate_numbers_expired}}</span>
+                        <span class="status-discont" style="padding: 3px;">Discont : {{certificate_numbers_discont}}</span>
+                    </div>
+                </div>
+                <!-- Icon Toggle -->
+                <div class="view-icons">
+                    <i class="fa fa-list" aria-hidden="true"></i>
+                    <i class="fa fa-th-large" aria-hidden="true"></i>
+                </div>
+            </div>
+
+            <!-- List View(Table) -->
+            <div class="list-view active">
+                <table>
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Country <span class="sort-icon">&#9650;&#9660;</span></th>
+                            <th onclick="sortTable(1)">Certification <span class="sort-icon">&#9650;&#9660;</span></th>
+                            <th onclick="sortTable(2)">Certificate No <span class="sort-icon">&#9650;&#9660;</span></th>
+                            <th>Issue Date</th>
+                            <th>Expire Date</th>
+                            <th onclick="sortTable(5)">Days <span class="sort-icon">&#9650;&#9660;</span></th>
+                            <th onclick="sortTable(6)">Status <span class="sort-icon">&#9650;&#9660;</span></th>
+                            <th>Models</th>
+                            <th>Remark</th> 
+                        </tr>
+                    </thead>
+                    <tbody id="certTableBody">
+                        {% for cert_no in certification_numbers %}
+                        <tr data-country-id="{{ cert_no.certification.country.id }}" data-certification="{{ cert_no.certification.certificate_name }}" data-status="{{ cert_no.status }}">
+                            <td>{{ cert_no.certification.country.name }}</td>
+                            <td>
+                                <span class="truncated-text" title="{{ cert_no.certification.certificate_name }}">
+                                    {{ cert_no.certification.certificate_name|truncatechars:20 }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ cert_no.certificate_no_link }}">
+                                    <span class="truncated-text" title="{{ cert_no.certificate_no }}">
+                                        {{ cert_no.certificate_no |truncatechars:20 }}
+                                    </span>
+                                </a>
+                            </td>
+                            <td>{{ cert_no.issue_date|date:"d M Y" }}</td>
+                            <td>
+                                {% if cert_no.expire_date %}
+                                    {{ cert_no.expire_date|date:"d M Y" }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>{{ cert_no.days_until_expiry  }}</td>
+                            <td class="tag status-{{ cert_no.status }}">{{ cert_no.status }}</td>
+                            <td>   
+                                <!-- Models Popup -->
+                                <a href="javascript:void(0)" onclick="openModelPopup({{ cert_no.id }})">Models</a>
+                                <div id="modelPopup{{ cert_no.id }}" class="model-popup">
+                                    <div class="popup-content">
+                                        <span class="close" onclick="closeModelPopup({{ cert_no.id }})">&times;</span>
+                                        <h2>Models</h2>
+                                        <p><strong>Indoor Models:</strong></p>
+                                        <ul>
+                                            {% for indoor in cert_no.indoor_models.all %}
+                                                <li>{{ indoor.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                        <p><strong>Outdoor Models:</strong></p>
+                                        <ul>
+                                            {% for outdoor in cert_no.outdoor_models.all %}
+                                                <li>{{ outdoor.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <!-- Remark Popup -->
+                                <a href="javascript:void(0)" onclick="openRemarkPopup({{ cert_no.id }})">
+                                    <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                                </a>
+                                <div id="remarkPopup{{ cert_no.id }}" class="remark-popup">
+                                    <div class="popup-content">
+                                        <span class="close" onclick="closeRemarkPopup({{ cert_no.id }})">&times;</span>
+                                        <h2>Remark</h2>
+                                        <p>{{ cert_no.remark|safe }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>        
+
+            <!-- Card View -->
+            <div class="card-view">
+                <div class="card-container">
+                    {% for cert_no in certification_numbers %}
+                    <div class="card" data-country-id="{{ cert_no.certification.country.id }}" data-certification="{{ cert_no.certification.certificate_name }}" data-status="{{ cert_no.status }}">
+                        <p>Country: {{ cert_no.certification.country.name }}</p>
+                        <p>Certificate: {{ cert_no.certification.certificate_name }}</p>
+                        <p>Certificate No: {{ cert_no.certificate_no }}</p>
+                        <p>Issue Date : {{ cert_no.issue_date|date:"d M Y" }}</p>
+                        <p>Expire Date: {{ cert_no.expire_date|date:"d M Y" }}</p>
+                        <p>Days Until Expiry: {{ cert_no.days_until_expiry }}</p>
+                        <p>Status: <span class="tag status-{{ cert_no.status }}">{{ cert_no.status }}</span></p>
+                        <p>
+                            <a href="javascript:void(0)" onclick="openModelPopup({{ cert_no.id }})">View Models</a>
+                            <div id="modelPopup{{ cert_no.id }}" class="model-popup">
+                                <div class="popup-content">
+                                    <span class="close" onclick="closeModelPopup({{ cert_no.id }})">&times;</span>
+                                    <h2>Models</h2>
+                                    <p><strong>Indoor Models:</strong></p>
+                                    <ul>
+                                        {% for indoor in cert_no.indoor_models.all %}
+                                            <li>{{ indoor.name }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p><strong>Outdoor Models:</strong></p>
+                                    <ul>
+                                        {% for outdoor in cert_no.outdoor_models.all %}
+                                            <li>{{ outdoor.name }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </p>
+                        <!-- Remark Popup -->
+                        <p>
+                            <a href="javascript:void(0)" onclick="openRemarkPopup({{ cert_no.id }})">
+                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                            </a>
+                            <div id="remarkPopup{{ cert_no.id }}" class="remark-popup">
+                                <div class="popup-content">
+                                    <span class="close" onclick="closeRemarkPopup({{ cert_no.id }})">&times;</span>
+                                    <h2>Remark</h2>
+                                    <p>{{ cert_no.remark|safe }}</p>
+                                </div>
+                            </div>
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<script>
+
+let selectedCountryId = 'all';
+let currentView = 'list';
+
+// Live Search Country Cards 
+// ใช้สำหรับการค้นหา Country Cards ใช้ได้ทั้งพิมพ์เล็กพิมพ์ใหญ่
+function filterCards() {
+    var input, filter, cards, cardContainer, card, title, i;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    cardContainer = document.getElementById("cardContainer");
+    cards = cardContainer.getElementsByClassName("card");
+    
+    for (i = 0; i < cards.length; i++) {
+        title = cards[i].getAttribute("data-name");
+        if (title.toUpperCase().indexOf(filter) > -1) {
+            cards[i].style.display = "";
+        } else {
+            cards[i].style.display = "none";
+        }
+    }
+}
+
+// จะปรับปรุงการ์ดแต่ละใบในหน้าเว็บโดยการตั้งค่าตัวแปร CSS --i ให้มีค่าตามตำแหน่งของการ์ดใน NodeList 
+// ซึ่งสามารถนำไปใช้ใน CSS เพื่อจัดการลำดับหรือสไตล์ของการ์ดแต่ละใบตามความต้องการ
+function updateCardClasses() {
+    var cards = document.querySelectorAll('.card');
+    cards.forEach(function(card, index) {
+        card.style.setProperty('--i', index + 1);
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    updateCardClasses();
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        filterCards();
+        updateCardClasses();
+    });
+});
+
+
+// สามารถกรองข้อมูลในตารางและการ์ดตามตัวกรองที่เลือก และอัปเดตการแสดงผลตามที่ผู้ใช้ต้องการ ถ้าไม่ตรงกับFilterจะถูกซ่อน
+// พร้อมกับการอัปเดตการนับสถานะและตัวกรองเพิ่มเติมให้สอดคล้องกัน (Dropdown filter)
+function filterTable(countryId = selectedCountryId, element = null) {
+    if (countryId !== selectedCountryId) {
+        selectedCountryId = countryId;
+        document.getElementById('certificationFilter').value = 'all';
+        // Reset certification filter to "All Certifications"
+        document.getElementById('statusFilter').value = 'all';
+        // Reset status filter to "All Statuses"
+    }
+    var certificationFilter = document.getElementById('certificationFilter').value;
+    var statusFilter = document.getElementById('statusFilter').value;
+    var rows = document.getElementById('certTableBody').getElementsByTagName('tr');
+    var cards = document.querySelectorAll('.card-view .card');
+    var certifications = new Set();
+
+    // Initialize status counts
+    var totalCount = 0;
+    var activatingCount = 0;
+    var cautionCount = 0;
+    var seriousCount = 0;
+    var criticalCount = 0;
+    var expiredCount = 0;
+
+    // Filter table rows
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var countryMatch = (countryId === 'all' || row.getAttribute('data-country-id') == countryId);
+        var certificationMatch = (certificationFilter === 'all' || row.getAttribute('data-certification') == certificationFilter);
+        var statusMatch = (statusFilter === 'all' || row.getAttribute('data-status') == statusFilter);
+
+        if (countryMatch && certificationMatch && statusMatch) {
+            row.style.display = '';
+            certifications.add(row.getAttribute('data-certification'));
+
+            // Update status counts
+            totalCount++;
+            var status = row.getAttribute('data-status');
+            if (status === 'activating') activatingCount++;
+            else if (status === 'caution') cautionCount++;
+            else if (status === 'serious') seriousCount++;
+            else if (status === 'critical') criticalCount++;
+            else if (status === 'expired') expiredCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    }
+                
+    // Filter cards
+    for (var j = 0; j < cards.length; j++) {
+        var card = cards[j];
+        var countryMatch = (countryId === 'all' || card.getAttribute('data-country-id') == countryId);
+        var certificationMatch = (certificationFilter === 'all' || card.getAttribute('data-certification') == certificationFilter);
+        var statusMatch = (statusFilter === 'all' || card.getAttribute('data-status') == statusFilter);
+
+        if (countryMatch && certificationMatch && statusMatch) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    }
+
+    updateDropdownFilters(certifications);
+    updateStatusCounts(totalCount, activatingCount, cautionCount, seriousCount, criticalCount, expiredCount);
+
+    if (element) {
+        var countryCards = document.getElementsByClassName('country-card');
+        for (var k = 0; k < countryCards.length; k++) {
+            countryCards[k].classList.remove('selected');
+        }
+        element.classList.add('selected');
+    }
+
+    filterTableSearch(); // Re-apply search filter
+}
+
+// Automatically filter table by "all" when the page loads
+window.onload = function () {
+    // Find the element for "all" countries and pass it to filterTable
+    var allCountriesElement = document.querySelector('.country-card[data-country-id = "all"]');
+    filterTable('all', allCountriesElement); // Filter by 'all' countries on load
+}
+
+// ทำให้ผู้ใช้สามารถเห็นสถานะของข้อมูลที่กรองได้ทันที.
+// Update การแสดงผลของ StatusCountsฺBars ได้ทันทีเมื่อใช้ filter
+function updateStatusCounts(total, activating, caution, serious, critical, expired) {
+    document.querySelector('.total').textContent = 'Total : ' + total;
+    document.querySelector('.status-activating').textContent = 'Activating : ' + activating;
+    document.querySelector('.status-caution').textContent = 'Caution : ' + caution;
+    document.querySelector('.status-serious').textContent = 'Serious : ' + serious;
+    document.querySelector('.status-critical').textContent = 'Critical : ' + critical;
+    document.querySelector('.status-expired').textContent = 'Expired : ' + expired;
+}
+
+
+// Update การแสดงผลของ DropdownFilters ให้เห็นเฉพาะข้อมูลที่เกี่ยวข้อง
+// เช่นหากเลือกประเทศจีน ใน DropdownFilters ก็จะแสดงเฉพาะใบอณุญาติของประเทศจีนเท่านั้น
+function updateDropdownFilters(certifications) {
+    var certificationFilter = document.getElementById('certificationFilter');
+    var options = certificationFilter.options;
+    var currentCertification = certificationFilter.value;
+    for (var i = 0; i < options.length; i++) {
+        if (options[i].value === 'all') continue;
+        if (certifications.has(options[i].value)) {
+            options[i].style.display = '';
+        } else {
+            options[i].style.display = 'none';
+        }
+    }
+    if (certifications.has(currentCertification)) {
+        certificationFilter.value = currentCertification;
+    } else {
+        certificationFilter.value = 'all';
+    }
+}
+
+
+// Sorting ข้อมูลในตาราง กดใช้ 1 ทีเป็น asc กดใช้อีก 1 ทีเป็น desc
+document.addEventListener('DOMContentLoaded', function() {
+        new Tablesort(document.querySelector('table'));
+    });
+
+    function sortTable(n) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    table = document.querySelector("table");
+    switching = true;
+    // Set the sorting direction to ascending:
+    dir = "asc"; 
+    /* Make a loop that will continue until no switching has been done: */
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+        /* Loop through all table rows (except the first, which contains table headers): */
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            /* Get the two elements you want to compare, one from the current row and one from the next: */
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+            
+            var xContent = x.textContent || x.innerText;
+            var yContent = y.textContent || y.innerText;
+
+            // Handle sorting for "Days" column (with numbers and N/A)
+            if (n === 5) {
+                var xValue = xContent.trim() === 'N/A' ? Infinity : parseFloat(xContent);
+                var yValue = yContent.trim() === 'N/A' ? Infinity : parseFloat(yContent);
+
+                // Check for NaN in case parsing fails
+                if (isNaN(xValue)) xValue = Infinity;
+                if (isNaN(yValue)) yValue = Infinity;
+
+                // Sort ascending/descending
+                if (dir === "asc") {
+                    if (xValue > yValue) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir === "desc") {
+                    if (xValue < yValue) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            } else {
+                // Default sorting for other columns (String comparison)
+                if (dir === "asc") {
+                    if (xContent.toLowerCase() > yContent.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir === "desc") {
+                    if (xContent.toLowerCase() < yContent.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (shouldSwitch) {
+            /* If a switch has been marked, make the switch and mark that a switch has been done: */
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount++;
+        } else {
+            /* If no switching has been done AND the direction is "asc", set the direction to "desc" and run the while loop again. */
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
+}
+
+
+// LiveSearchTable จะทำการกรองข้อมูลในตารางและการ์ดโดยใช้ค่าที่ป้อนจากผู้ใช้ผ่านอินพุตกรอง 
+// และจะทำการแสดงผลเฉพาะข้อมูลที่ตรงตามเงื่อนไขที่กำหนดเท่านั้น.
+function filterTableSearch() {
+    var tableInput, cardInput, tableFilter, cardFilter, table, tr, td, i, j, txtValue, cards;
+    // Inputs for search
+    tableInput = document.getElementById("searchTableInput");
+    cardInput = document.getElementById("searchTableInput");
+    // Filters for search
+    tableFilter = tableInput.value.toUpperCase();
+    cardFilter = cardInput.value.toUpperCase();
+
+    // Table filtering
+    table = document.querySelector("table");
+    tr = table.querySelectorAll("tbody tr"); // Use querySelectorAll to select all rows in tbody
+
+    for (i = 0; i < tr.length; i++) { // Start from 0 since we are using querySelectorAll now
+        tr[i].style.display = "none";
+        td = tr[i].getElementsByTagName("td");
+        var countryMatch = (selectedCountryId === 'all' || tr[i].getAttribute('data-country-id') == selectedCountryId);
+        var certificationFilter = document.getElementById('certificationFilter').value;
+        var statusFilter = document.getElementById('statusFilter').value;
+        var certificationMatch = (certificationFilter === 'all' || tr[i].getAttribute('data-certification') == certificationFilter);
+        var statusMatch = (statusFilter === 'all' || tr[i].getAttribute('data-status') == statusFilter);
+
+        if (!countryMatch || !certificationMatch || !statusMatch) continue;
+
+        for (j = 0; j < td.length; j++){
+            if(td[j]){
+                // ถ้ามี title(ข้อความที่ถูกตัด)ให้ใช้ title ในการค้นหา
+                var spanElement = td[j].querySelector('.truncated-text');
+                if (spanElement && spanElement.title) {
+                    txtValue = spanElement.title;
+                } else {
+                    txtValue = td[j].textContent || td[j].innerText;
+                }
+
+                if (txtValue.toUpperCase().indexOf(tableFilter) > -1) {
+                    tr[i].style.display = "";
+                    break;
+                }
+            }
+        }
+    }
+
+    // Card filtering
+    cards = document.querySelectorAll(".card-view .card");
+    for (i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var cardCountryMatch = (selectedCountryId === 'all' || card.getAttribute('data-country-id') == selectedCountryId);
+        var cardCertificationMatch = (certificationFilter === 'all' || card.getAttribute('data-certification') == certificationFilter);
+        var cardStatusMatch = (statusFilter === 'all' || card.getAttribute('data-status') == statusFilter);
+
+        if (!cardCountryMatch || !cardCertificationMatch || !cardStatusMatch) continue;
+
+        var cardTextContent = card.textContent || card.innerText; // Get all text content in the card
+        if (cardTextContent.toUpperCase().indexOf(cardFilter) > -1) {
+            card.style.display = "";
+        } else {
+            card.style.display = "none";
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchTableInput').addEventListener('keyup', function() {
+        filterTableSearch();
+    });
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        filterTableSearch();
+    });
+});
+
+
+
+
+// เปิดและปิดป๊อปอัพสำหรับโมเดล
+function openModelPopup(certNoId) {
+    var modelPopups = document.querySelectorAll(`#modelPopup${certNoId}`);
+    modelPopups.forEach(popup => popup.style.display = 'block');
+    var filter = document.getElementById("searchTableInput").value.toUpperCase();
+    highlightPopupModels(certNoId, filter);
+}
+function closeModelPopup(certNoId) {
+    var modelPopups = document.querySelectorAll(`#modelPopup${certNoId}`);
+    modelPopups.forEach(popup => popup.style.display = 'none');
+}
+// เปิดและปิดป๊อปอัพสำหรับหมายเหตุ
+function openRemarkPopup(id) {
+    var remarkPopups = document.querySelectorAll(`#remarkPopup${id}`);
+    remarkPopups.forEach(popup => popup.style.display = 'block');
+}
+function closeRemarkPopup(id) {
+    var remarkPopups = document.querySelectorAll(`#remarkPopup${id}`);
+    remarkPopups.forEach(popup => popup.style.display = 'none');
+}
+
+
+function highlightPopupModels(certNoId, filter) {
+    var popup, lists, items, i, txtValue;
+    popup = document.getElementById('modelPopup' + certNoId);
+    lists = popup.getElementsByTagName('ul');
+
+    for (i = 0; i < lists.length; i++) {
+        items = lists[i].getElementsByTagName('li');
+        for (var j = 0; j < items.length; j++) {
+            txtValue = items[j].textContent || items[j].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                items[j].classList.add('highlight');
+            } else {
+                items[j].classList.remove('highlight');
+            }
+        }
+    }
+}
+
+// สามารถสลับการแสดงผลระหว่างแบบรายการและการ์ดได้อย่างง่ายดาย โดยการคลิกที่ไอคอนที่เป็นตัวแทนสำหรับแต่ละรูปแบบข้อมูล
+document.addEventListener('DOMContentLoaded', () => {
+    // เลือกไอคอนแสดงแบบรายการและการ์ด
+    const listViewIcon = document.querySelector('.fa-list');
+    const cardViewIcon = document.querySelector('.fa-th-large');
+    // เลือกพื้นที่แสดงผลแบบรายการและการ์ด
+    const listView = document.querySelector('.list-view');
+    const cardView = document.querySelector('.card-view');
+    // เพิ่ม event listener สำหรับคลิกที่ไอคอนแสดงแบบรายการ
+    listViewIcon.addEventListener('click', () => {
+        setActiveView('list');
+    });
+    // เพิ่ม event listener สำหรับคลิกที่ไอคอนแสดงแบบการ์ด
+    cardViewIcon.addEventListener('click', () => {
+        setActiveView('card');
+    });
+    // ฟังก์ชันที่ใช้ในการเปลี่ยนแสดงผลระหว่างแบบรายการและการ์ด
+    function setActiveView(view) {
+        if (view === 'list') {
+            listView.classList.add('active'); // เพิ่มคลาส 'active' สำหรับแสดงแบบรายการ
+            cardView.classList.remove('active'); // ลบคลาส 'active' สำหรับซ่อนแบบการ์ด
+            listViewIcon.classList.add('active'); // เพิ่มคลาส 'active' สำหรับไอคอนแสดงแบบรายการ
+            cardViewIcon.classList.remove('active'); // ลบคลาส 'active' สำหรับไอคอนแสดงแบบการ์ด
+        } else {
+            listView.classList.remove('active'); // ลบคลาส 'active' สำหรับซ่อนแบบรายการ
+            cardView.classList.add('active'); // เพิ่มคลาส 'active' สำหรับแสดงแบบการ์ด
+            listViewIcon.classList.remove('active'); // ลบคลาส 'active' สำหรับไอคอนแสดงแบบรายการ
+            cardViewIcon.classList.add('active'); // เพิ่มคลาส 'active' สำหรับไอคอนแสดงแบบการ์ด
+        }
+    }
+    // ตั้งค่าให้แสดงผลแบบรายการเป็นค่าเริ่มต้น
+    setActiveView('list');
+});
+
+</script>
+
+
+<style>
+
+
+/* Container for the cards */
+
+/* .card-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 4 cards per row
+    gap: 20px; Space between cards
+    padding: 20px;
+} */
+
+/* Individual card styling */
+/* .card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    transition: transform 0.2s;
+} */
+
+.card:hover {
+    transform: scale(1.01); /* Slight zoom effect on hover */
+}
+
+.truncated-text {
+    display: inline-block;
+    max-width: 150px;  /* กำหนดขนาดพื้นที่สำหรับข้อความ */
+    white-space: nowrap; /* ป้องกันการเว้นบรรทัด */
+    overflow: hidden;  
+    text-overflow: ellipsis;  /* ใส่ ... เมื่อข้อความยาวเกิน */
+    vertical-align: middle;
+}
+
+/* Responsive design */
+/* @media (max-width: 1200px) {
+    .card-container {
+        grid-template-columns: repeat(3, 1fr); 3 cards per row on smaller screens
+    }
+}
+
+@media (max-width: 900px) {
+    .card-container {
+        grid-template-columns: repeat(2, 1fr); 2 cards per row on even smaller screens
+    }
+}
+
+@media (max-width: 600px) {
+    .card-container {
+        grid-template-columns: 1fr; 1 card per row on small screens
+    }
+} */
+
+</style>
+{% endblock %}

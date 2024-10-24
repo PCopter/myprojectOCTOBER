@@ -1,0 +1,36 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+Certifications for {{ country.name }}
+{% endblock %}
+
+{% block content %}
+<section class="content-section">
+    <h1 class="content-title text-center">{{ country.name }} Certifications</h1>
+    <div class="statistics">
+        <p>Activating: {{ activating_count }}</p>
+        <p>Risk: {{ risk_count }}</p>
+        <p>Alert: {{ alert_count }}</p>
+    </div>
+    <div class="content-container">
+        {% if certifications_with_expiry %}
+            <ul>
+                {% for item in certifications_with_expiry %}
+                    <li>
+                        <strong>{{ item.certification.certificate_name }}</strong> -
+                        {{ item.certificate_number.certificate_no }} -
+                        {% if item.days_until_expiry is not None %}
+                            Expires in {{ item.days_until_expiry }} days
+                        {% else %}
+                            No expiry date
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No certifications found for {{ country.name }}.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

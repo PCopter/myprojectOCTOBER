@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block site_title %}Certifications{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'app_general/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'app_certifications/css/certifications.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'certifications' %}">All Certifications</a></li>
+                <li><a href="{% url 'certifications_by_country' 'USA' %}">Certifications in USA</a></li>
+                <li><a href="{% url 'certifications_by_country' 'UK' %}">Certifications in UK</a></li>
+                <!-- Add more links as needed -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Default content can go here, if needed -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2023 My Certification Site. All rights reserved.</p>
+    </footer>
+</body>
+</html>
