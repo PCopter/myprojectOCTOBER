@@ -1,0 +1,96 @@
+{% load static %}
+
+<header>
+    <nav>
+        <div class="wrapper">
+            <!-- <div class="logo">
+                <a class="site-header-item site-header-brand" href="{% url 'home' %}">
+                    <img src="{% static 'app_general/favicon.png' %}">
+                </a>
+            </div> -->
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'listview' %}">Certifications</a></li>
+                <li><a href="{% url 'regulation_list' %}">Regulations</a></li>
+                <li><a href="{% url 'min_standard_test' %}">Standard</a></li>
+                
+
+
+                
+            
+
+                
+
+                <!-- <li>
+                    <a href="#" class="desktop-item">Mega Menu</a>
+                    <input type="checkbox" id="showMega">
+                    <label for="showMega" class="mobile-item">Mega Menu</label>
+                    <div class="mega-box">
+                        <div class="content">
+                            <div class="row">
+                                <img src="https://fadzrinmadu.github.io/hosted-assets/responsive-mega-menu-and-dropdown-menu-using-only-html-and-css/img.jpg" alt="">
+                            </div>
+                            <div class="row">
+                                <header>Design Services</header>
+                                <ul class="mega-links">
+                                    <li><a href="#">Graphics</a></li>
+                                    <li><a href="#">Vectors</a></li>
+                                    <li><a href="#">Business cards</a></li>
+                                    <li><a href="#">Custom logo</a></li>
+                                </ul>
+                            </div>
+                            <div class="row">
+                                <header>Email Services</header>
+                                <ul class="mega-links">
+                                    <li><a href="#">Personal Email</a></li>
+                                    <li><a href="#">Business Email</a></li>
+                                    <li><a href="#">Mobile Email</a></li>
+                                    <li><a href="#">Web Marketing</a></li>
+                                </ul>
+                            </div>
+                            <div class="row">
+                                <header>Security services</header>
+                                <ul class="mega-links">
+                                    <li><a href="#">Site Seal</a></li>
+                                    <li><a href="#">VPS Hosting</a></li>
+                                    <li><a href="#">Privacy Seal</a></li>
+                                    <li><a href="#">Website design</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li> -->
+                
+
+                {% if user.is_authenticated %}
+                <li style="padding-left: 340px;">
+                    <li>
+                        <a href="/admin/">
+                            <span>{{ user.username }}</span>
+                        </a>
+                    </li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="border: none; background: none; color: inherit; cursor: pointer; padding: 0; color: white;">
+                                Logout
+                            </button>
+                        </form>
+                    </li>
+                </li>
+
+                {% else %}
+                <li style="padding-left: 320px;">
+                    <!-- <li><a href="{% url 'register' %}">Register</a></li> -->
+                    <li ><a href="{% url 'login' %}" >Login</a></li>
+                </li>
+                {% endif %}
+            </ul>
+            
+        </div>
+    </nav>
+</header>
+
+
+

@@ -1,0 +1,146 @@
+{% extends 'app_general/components/base.html' %}
+{% load static %}
+
+{% block site_title %}
+Home
+{% endblock %}
+
+{% block content %}
+<section class="home-landing-section">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <h1 class="home-landing-text" style=" font-size: 55px; font-weight:900;">Quality Assurance Planning (QAP)</h1>
+    <h1 class="home-landing-text" style=" font-weight:800;">Certificates System Website</h1>
+
+    <section class="page-contain">
+        <a href="#" class="data-card">
+          <h3>{{ country_count }}</h3>
+          <h4>Countries</h4>
+          <p>View Information</p>
+        </a>
+        
+        <a href="#" class="data-card">
+          <h3>{{ certification_count }}</h3>
+          <h4>Certificates</h4>
+          <p>View Information</p>
+        </a>
+        
+        <a href="#" class="data-card">
+          <h3>{{ certificate_number_count }}</h3>
+          <h4 style="margin-bottom: 16px;">Certificate Numbers</h4>
+          <p>View Information</p>
+        </a>
+
+    </section>
+
+    <section style="padding: 10px; font-size: 18px; font-weight: 400;">
+        <span class="total" style="background-color: #e0e0e0; padding: 10px; border: 2px solid black;  ">Total : {{certificate_number_count}}</span>
+        <span class="status-activating" style="padding: 10px; border: 2px solid black;  ">Activating : {{certificate_numbers_activating}}</span>
+        <span class="status-caution" style="padding: 10px; border: 2px solid black;  ">Caution : {{certificate_numbers_caution}}</span>
+        <span class="status-serious" style="padding: 10px; border: 2px solid black;  ">Serious : {{certificate_numbers_serious}}</span>
+        <span class="status-critical" style="padding: 10px; border: 2px solid black;  ">Critical : {{certificate_numbers_critical}}</span>
+        <span class="status-expired" style="padding: 10px; border: 2px solid black;  ">Expired : {{certificate_numbers_expired}}</span>
+    </section>
+    
+
+    
+
+
+    <section style="padding: 10px;">
+        <div class="clockbody">
+            <div class="container">
+                  <div class="display-date">
+                    <span id="day">day</span>,
+                    <span id="daynum">00</span>
+                    <span id="month">month</span>
+                    <span id="year">0000</span>
+                  </div>
+                <div class="display-time"></div>
+            </div>
+        </div>
+    </section>
+    <!-- <div>
+        <ul>
+            <li class="status-activating">Activate: {{ certificate_numbers_activate }}</li>
+            <li class="status-risk">Risk: {{ certificate_numbers_risk }}</li>
+            <li class="status-alert">Alert: {{ certificate_numbers_alert }}</li>
+        </ul>
+    </div> -->
+
+   <!-- <p>
+        <a class="button button-primary" href="{% url 'subscription' %}">Subscription</a>
+    </p> -->
+</section>
+
+<section class="content-section" style="padding: 75px;">
+    <div class="content-container">
+        <div class="grid grid-3">
+            <div>
+                
+                <i class="fa fa-bell-o" aria-hidden="true" style="font-size: 80px;  place-items: center; display: grid; padding: 10px 10px;"></i>
+                <h3 class="text-center">Notifications Automatic</h3>
+                <p class="text-center">Read certificates expiration date from the database. 
+                    You can then receive automatic notifications via email.</p>
+            </div>
+
+            <div>
+                <i class="fa fa-plus" aria-hidden="true" style="font-size: 80px;  place-items: center; display: grid; padding: 10px 10px;"></i>
+                <h3 class="text-center">Flexible</h3>
+                <p class="text-center">
+                    Can be used and changed according to user needs in a variety of formats.</p>
+            </div>
+        
+            <div>
+                <i class="fa fa-heart-o" aria-hidden="true" style="font-size: 80px;  place-items: center; display: grid; padding: 10px 10px;"></i>
+                <h3 class="text-center">User Friendly</h3>
+                <p class="text-center">
+                    Users can use it easily. Even when using it for the 
+                    first time, you can understand the various parts.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script>
+    const displayTime = document.querySelector(".display-time");
+    // Time
+    function showTime() {
+        let time = new Date();
+        displayTime.innerText = time.toLocaleTimeString("en-US", { hour12: false });
+        setTimeout(showTime, 1000);
+    }
+
+    showTime();
+
+    // Date
+    function updateDate() {
+        let today = new Date();
+
+        // return number
+        let dayName = today.getDay(),
+            dayNum = today.getDate(),
+            month = today.getMonth(),
+            year = today.getFullYear();
+
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const dayWeek = [
+            "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
+            "Friday", "Saturday"
+        ];
+        // value -> ID of the html element
+        const IDCollection = ["day", "daynum", "month", "year"];
+        // return value array with number as a index
+        const val = [dayWeek[dayName], dayNum, months[month], year];
+        for (let i = 0; i < IDCollection.length; i++) {
+            document.getElementById(IDCollection[i]).firstChild.nodeValue = val[i];
+        }
+    }
+
+    updateDate();
+</script>
+{% endblock %}
+  
+

@@ -1,0 +1,57 @@
+{% extends 'app_general/components/base.html'%}
+
+{% block site_title %}
+Subscription
+{% endblock %}
+
+{% block content %}
+
+
+<section class="content-section content-section-single">
+    <div class="content-container content-container-narrow">
+        
+        <h2>ลงทะเบียน</h2>
+        <p>กรุณาใส่ข้อมูลจริงๆ</p>
+
+        <form class="subscription-form" action="{% url 'subscription' %}" method="post">
+            {% csrf_token %}
+            {{form.non_field_errors}}
+            
+            <div class = "form-field">
+                {{form.name.label_tag}}
+                {{form.name}}
+                {{form.name.errors}}
+            
+            </div>
+        
+            <div class = "form-field">
+                {{form.email.label_tag}}
+                {{form.email}}
+                {{form.email.errors}}
+            
+            </div>
+        
+            <div class = "form-field">
+                {{form.certification_set.label_tag}}
+                {{form.certification_set}}
+                {{form.certification_set.errors}}
+            
+            </div>
+        
+            <div class = "form-field">
+                <label>อ่านข้อตกลงและเงื่อนไข</label>
+                <label>
+                    {{form.accepted}}
+                    {{form.accepted.label}}
+                </label>
+                {{form.accepted.label.errors}}
+            </div>
+        
+        
+            <div class = "form-field"><button class="button button-primary" type="submit">subscript</button></div>
+        </form>
+
+    </div>
+
+</section>
+{% endblock %}
