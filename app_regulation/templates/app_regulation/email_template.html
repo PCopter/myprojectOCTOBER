@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Regulation Update</title> 
+    <style>
+        /* Inline styles for better compatibility */
+        .accordion-section {
+            padding: 10px;
+        }
+        .accordion-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4b40e2;
+            margin-bottom: 5px;
+        }
+        .accordion-content {
+            font-size: 14px;
+            color: #333;
+        }  
+        .section {
+            color: #555555;
+            padding: 5px 0;
+        }
+        
+        .overdue-status { background-color: #343a40; color: white; padding: 10px; border-radius: 5px; }
+        .critical-status { background-color: #f7b4bb; padding: 10px; border-radius: 5px; }
+        .serious-status { background-color: #ffe5cc; padding: 10px; border-radius: 5px; }
+        .caution-status { background-color: #f5f4b8; padding: 10px; border-radius: 5px; }
+        .inprogress-status { background-color: #ccffcc; padding: 10px; border-radius: 5px; }
+        .finished-status { background-color: #3f3f3f; color: white; padding: 10px; border-radius: 5px; }
+        hr {
+            border: none;
+            border-top: 1px solid #dee2e6;
+            margin: 20px 0;
+        } 
+        .status-label {
+        display: block; /* ให้สถานะเป็นบล็อกเพื่อความชัดเจน */
+        width: 100%; /* ครอบคลุมความกว้างเต็ม */
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center; /* จัดให้อยู่กึ่งกลาง */
+    }
+    </style>
+</head>
+<body style="font-family: Arial, sans-serif;">
+    <h2 style="font-size: 36;">Regulation Status Update for {{ country.name }}</h2>
+    <hr>
+    {% if regulations %}
+        {% for regulation in regulations %}
+            <div class="accordion-section">
+                <div class="accordion-title">{{ regulation.regulation }}</div>
+                <div class="accordion-content">
+                    <p>
+                        <!-- <strong>Status:</strong>  -->
+                        <span class="status-label"
+                        {% if regulation.status == "overdue" %}
+                            class="overdue-status"   
+                        {% elif regulation.status == "critical" %}
+                            class="critical-status"
+                        {% elif regulation.status == "serious" %}
+                            class="serious-status"
+                        {% elif regulation.status == "caution" %}
+                            class="caution-status"
+                        {% elif regulation.status == "inprogress" %}
+                            class="inprogress-status"
+                        {% elif regulation.status == "finished" %}
+                            class="finished-status"
+                        {% endif %}
+                        ><strong>
+                            {{ regulation.status|upper }}!! ---> Please complete the process within : {{ regulation.days_until_expiry | safe }} days
+                        </strong></span>
+                    </p>
+                    <p><strong>Mandatory/Voluntary:</strong> {{ regulation.mandatory_voluntory }}</p>
+                    <p><strong>Standard:</strong> {{ regulation.standard }}</p>
+                    <p><strong>Effective Date:</strong> {{ regulation.effective_date | safe }}</p>
+                    <!-- <p><strong>Expire Date:</strong> {{ regulation.expire_date }}</p> -->
+                    <!-- <p><strong>Complete the process within:</strong> {{ regulation.days_until_expiry | safe }} days</p> -->
+                    <p><strong>Action:</strong> {{ regulation.action | safe }}</p>
+                    <p><strong>Scope:</strong> {{ regulation.scope | safe }}</p>
+                    <p><strong>By:</strong> {{ regulation.by | safe }}</p>
+                    <div><strong>Remark:</strong> {{ regulation.remark | safe}}</div>
+                    <div><strong>Received Information Date :</strong> {{ regulation.received_information_date |date:"d M Y"  }}</div>
+                    <div><strong>Type :</strong> {{ regulation.type }}</div>
+                </div>
+            </div>
+            <hr> <!-- เส้นแบ่งระหว่างแต่ละ regulation -->
+            <hr> <!-- เส้นแบ่งระหว่างแต่ละ regulation -->
+        {% endfor %}
+    {% else %}
+        <p>No regulations available at this time.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,582 @@
+{% extends 'app_general/components/base.html'%}
+{% load static %}
+{% block site_title %}
+Regulations
+{% endblock %}
+{% block content %}
+
+<section>
+    <div class="dashboard-container">
+        
+        <!-- Side 20% -->
+        <div class="sidebar">
+            <!-- Search bar for country cards -->
+            <input style="margin: 10px 0px 15px 0px;" type="text" id="searchInput" onkeyup="searchCards()" placeholder="Search for countries..">
+            
+            <!-- go to sendmail page -->
+            <div class="dropdown-filter">
+                <button class="button button-primary" style="margin-bottom: 4px;">
+                    <a style="text-decoration: none; color: #ffffff;" href="{% url 'regulations_manualmail' %}">Countries information & Sending mail
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                    </a>
+                </button>
+            </div>
+
+            <!-- drop down filter -->
+            <div class="dropdown-filter">
+                <select id="statusFilter" onchange="filterByStatus()">
+                    <option value="all">All </option>
+                    <option value="overdue">Overdue</option>
+                    <option value="critical">Critical</option>
+                    <option value="serious">Serious</option>
+                    <option value="caution">Caution</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="finished">Finished</option>
+                </select>
+            </div>
+            
+
+            <!-- Country Cards -->
+            <div class="country-cards" id="cardContainer">
+                <div class="country-card" data-name="All" data-country-id="all" onclick="filterbyCountry('all', this)">
+                    <img src="{% static 'app_general/all.png' %}" alt="All" class="country-image">
+                    <div class="card-content">
+                        <p class="country-name">All</p>
+                        <p class="total-count">Regulations count : {{ regulations.count }}</p>
+                    </div>
+                </div>
+                {% for country in countries %}
+                <div class="country-card" data-name="{{ country.name }}" data-country-id="{{ country.id }}" onclick="filterbyCountry({{ country.id }}, this)">
+                    <!-- {% static country.image_relative_url %} -->
+                    <img src="{% static country.image_relative_url %}" alt="{{ country.name }}" class="country-image">
+                    <div class="card-content">
+                        <p class="country-name">{{ country.name }}</p>
+                        <p class="total-count">Regulations count : {{ country.regulations.count }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        
+        </div>
+
+        <!-- Main content side 80% -->
+        <div class="main-content">
+            <div class="container">
+                <h2 style="margin-bottom: 16px; border-bottom: 1px solid #ddd; padding: 5px 0;" id="regulationsTitle">
+                    All Regulations
+                </h2>
+
+                <!-- search bar --> 
+                <input type="text" id="regulationSearchInput" onkeyup="applyFilters()" placeholder="Search regulations..."
+                style="margin-bottom: -20px; padding: 8px; width: 100%; box-sizing: border-box;">
+
+                <div class="status-counts">
+                    <!-- overdue -->
+                    <div class="status-item overdue-status" >
+                        <strong>Overdue(< 0 days) :</strong> <span id="overdueCount">{{ total_overdue_count }}</span>
+                    </div>
+                    {% for regulation in regulations %}
+                        {% if regulation.status == "overdue" %}
+                            <div class="collapsible-card regulation-card {{ regulation.status|lower }}-status" data-country-id="{{ regulation.country.id }}">
+                                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                                    <span class="accordion-symbol">+</span> 
+                                    <img src="{% static regulation.country.image_relative_url %}" alt="{{ regulation.country.name }} flag" class="country-flag">
+                                    <!-- {{ regulation.country.name }} -->
+                                    {{ regulation.regulation }}
+                                </div>
+                                <div class="collapsible-content" style="display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                                    <p class="section"><strong>Regulation :</strong> {{ regulation.regulation }}</p>
+                                    <div class="section"><strong>Received Information Date :</strong> {{ regulation.received_information_date |date:"d M Y"  }}</div>
+                                    <p class="section"><strong>Days until expiry :</strong> {{ regulation.days_until_expiry }} days</p>
+                                    <p class="section"><strong>Mandatory/Voluntary :</strong> {{ regulation.mandatory_voluntory }}</p>
+                                    <p class="section"><strong>Standard :</strong> {{ regulation.standard }}</p>
+                                    <div class="section"><strong>Effective Date :</strong> {{ regulation.effective_date |safe  }}</div>
+                                    <div class="section"><strong>MCP Action :</strong> {{ regulation.action|safe }}</div>
+                                    <div class="section"><strong>Scope :</strong> {{ regulation.scope|safe }}</div>
+                                    <div class="section"><strong>Detail :</strong> {{ regulation.detail|safe }}</div>
+                                    <div class="section"><strong>Type :</strong> {{ regulation.type }}</div>
+                                    <p class="section"><strong>By :</strong> {{ regulation.by |safe }}</p>
+                                    <div class="section"><strong>Remark :</strong> {{ regulation.remark |safe }}</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- critical -->
+                    <div class="status-item critical-status">
+                        <strong>Critical(< 180 days) :</strong> <span id="criticalCount">{{ total_critical_count }}</span>
+                    </div>
+                    {% for regulation in regulations %}
+                        {% if regulation.status == "critical" %}
+                            <div class="collapsible-card regulation-card {{ regulation.status|lower }}-status" data-country-id="{{ regulation.country.id }}">
+                                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                                    <span class="accordion-symbol">+</span> 
+                                    <img src="{% static regulation.country.image_relative_url %}" alt="{{ regulation.country.name }} flag" class="country-flag">
+                                    <!-- {{ regulation.country.name }}  -->
+                                    {{ regulation.regulation }}
+                                </div>
+                                <div class="collapsible-content" style="display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                                    <p class="section"><strong>Regulation :</strong> {{ regulation.regulation }}</p>
+                                    <div class="section"><strong>Received Information Date :</strong> {{ regulation.received_information_date |date:"d M Y"  }}</div>
+                                    <p class="section"><strong>Days until expiry :</strong> {{ regulation.days_until_expiry }} days</p>
+                                    <p class="section"><strong>Mandatory/Voluntary :</strong> {{ regulation.mandatory_voluntory }}</p>
+                                    <p class="section"><strong>Standard :</strong> {{ regulation.standard }}</p>
+                                    <div class="section"><strong>Effective Date :</strong> {{ regulation.effective_date |safe  }}</div>
+                                    <div class="section"><strong>MCP Action :</strong> {{ regulation.action|safe }}</div>
+                                    <div class="section"><strong>Scope :</strong> {{ regulation.scope|safe }}</div>
+                                    <div class="section"><strong>Detail :</strong> {{ regulation.detail|safe }}</div>
+                                    <div class="section"><strong>Type :</strong> {{ regulation.type }}</div>
+                                    <p class="section"><strong>By :</strong> {{ regulation.by |safe }}</p>
+                                    <div class="section"><strong>Remark :</strong> {{ regulation.remark |safe }}</div>
+                                    
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- serious -->
+                    <div class="status-item serious-status">
+                        <strong>Serious(< 120 days) :</strong> <span id="seriousCount">{{ total_serious_count }}</span>
+                    </div>
+                    {% for regulation in regulations %}
+                        {% if regulation.status == "serious" %}
+                            <div class="collapsible-card regulation-card {{ regulation.status|lower }}-status" data-country-id="{{ regulation.country.id }}">
+                                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                                    <span class="accordion-symbol">+</span> 
+                                    <img src="{% static regulation.country.image_relative_url %}" alt="{{ regulation.country.name }} flag" class="country-flag">
+                                    <!-- {{ regulation.country.name }}  -->
+                                    {{ regulation.regulation }}
+                                </div>
+                                <div class="collapsible-content" style="display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                                    <p class="section"><strong>Regulation :</strong> {{ regulation.regulation }}</p>
+                                    <div class="section"><strong>Received Information Date :</strong> {{ regulation.received_information_date |date:"d M Y"  }}</div>
+                                    <p class="section"><strong>Days until expiry :</strong> {{ regulation.days_until_expiry }} days</p>
+                                    <p class="section"><strong>Mandatory/Voluntary :</strong> {{ regulation.mandatory_voluntory }}</p>
+                                    <p class="section"><strong>Standard :</strong> {{ regulation.standard }}</p>
+                                    <div class="section"><strong>Effective Date :</strong> {{ regulation.effective_date |safe  }}</div>
+                                    <div class="section"><strong>MCP Action :</strong> {{ regulation.action|safe }}</div>
+                                    <div class="section"><strong>Scope :</strong> {{ regulation.scope|safe }}</div>
+                                    <div class="section"><strong>Detail :</strong> {{ regulation.detail|safe }}</div>
+                                    <div class="section"><strong>Type :</strong> {{ regulation.type }}</div>
+                                    <p class="section"><strong>By :</strong> {{ regulation.by |safe }}</p>
+                                    <div class="section"><strong>Remark :</strong> {{ regulation.remark |safe }}</div>
+                                    
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- caution -->
+                    <div class="status-item caution-status">
+                        <strong>Caution(< 60 days) :</strong> <span id="cautionCount">{{ total_caution_count }}</span>
+                    </div>
+                    {% for regulation in regulations %}
+                        {% if regulation.status == "caution" %}
+                            <div class="collapsible-card regulation-card {{ regulation.status|lower }}-status" data-country-id="{{ regulation.country.id }}">
+                                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                                    <span class="accordion-symbol">+</span> 
+                                    <img src="{% static regulation.country.image_relative_url %}" alt="{{ regulation.country.name }} flag" class="country-flag">
+                                    <!-- {{ regulation.country.name }}  -->
+                                    {{ regulation.regulation }}
+                                </div>
+                                <div class="collapsible-content" style="display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                                    <p class="section"><strong>Regulation :</strong> {{ regulation.regulation }}</p>
+                                    <div class="section"><strong>Received Information Date :</strong> {{ regulation.received_information_date |date:"d M Y"  }}</div>
+                                    <p class="section"><strong>Days until expiry :</strong> {{ regulation.days_until_expiry }} days</p>
+                                    <p class="section"><strong>Mandatory/Voluntary :</strong> {{ regulation.mandatory_voluntory }}</p>
+                                    <p class="section"><strong>Standard :</strong> {{ regulation.standard }}</p>
+                                    <div class="section"><strong>Effective Date :</strong> {{ regulation.effective_date |safe  }}</div>
+                                    <div class="section"><strong>MCP Action :</strong> {{ regulation.action|safe }}</div>
+                                    <div class="section"><strong>Scope :</strong> {{ regulation.scope|safe }}</div>
+                                    <div class="section"><strong>Detail :</strong> {{ regulation.detail|safe }}</div>
+                                    <div class="section"><strong>Type :</strong> {{ regulation.type }}</div>
+                                    <p class="section"><strong>By :</strong> {{ regulation.by |safe }}</p>
+                                    <div class="section"><strong>Remark :</strong> {{ regulation.remark |safe }}</div>
+                                    
+                                </div>
+                            </div>
+                            
+                        {% endif %}
+                        
+                    {% endfor %}
+
+                    <!-- inprogress -->
+                    <div class="status-item inprogress-status">
+                        <strong>In Progress:</strong> <span id="inprogressCount">{{ total_inprogress_count }}</span>
+                    </div>
+                    {% for regulation in regulations %}
+                        {% if regulation.status == "inprogress" %}
+                            <div class="collapsible-card regulation-card {{ regulation.status|lower }}-status" data-country-id="{{ regulation.country.id }}">
+                                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                                    <span class="accordion-symbol">+</span> 
+                                    <img src="{% static regulation.country.image_relative_url %}" alt="{{ regulation.country.name }} flag" class="country-flag">
+                                    <!-- {{ regulation.country.name }}  -->
+                                    {{ regulation.regulation }}
+                                </div>
+                                <div class="collapsible-content" style="display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                                    <p class="section"><strong>Regulation :</strong> {{ regulation.regulation }}</p>
+                                    <div class="section"><strong>Received Information Date :</strong> {{ regulation.received_information_date |date:"d M Y"  }}</div>
+                                    <p class="section"><strong>Days until expiry :</strong> {{ regulation.days_until_expiry }} days</p>
+                                    <p class="section"><strong>Mandatory/Voluntary :</strong> {{ regulation.mandatory_voluntory }}</p>
+                                    <p class="section"><strong>Standard :</strong> {{ regulation.standard }}</p>
+                                    <div class="section"><strong>Effective Date :</strong> {{ regulation.effective_date |safe  }}</div>
+                                    <div class="section"><strong>MCP Action :</strong> {{ regulation.action|safe }}</div>
+                                    <div class="section"><strong>Scope :</strong> {{ regulation.scope|safe }}</div>
+                                    <div class="section"><strong>Detail :</strong> {{ regulation.detail|safe }}</div>
+                                    <div class="section"><strong>Type :</strong> {{ regulation.type }}</div>
+                                    <p class="section"><strong>By :</strong> {{ regulation.by |safe }}</p>
+                                    <div class="section"><strong>Remark :</strong> {{ regulation.remark |safe }}</div>
+                                    
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- finished -->
+                    <div class="status-item finished-status">
+                        <strong>Finished:</strong> <span id="finishedCount">{{ total_finished_count }}</span>
+                    </div>
+                    {% for regulation in regulations %}
+                        {% if regulation.status == "finished" %}
+                            <div class="collapsible-card regulation-card {{ regulation.status|lower }}-status" data-country-id="{{ regulation.country.id }}">
+                                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                                    <span class="accordion-symbol">+</span> 
+                                    <img src="{% static regulation.country.image_relative_url %}" alt="{{ regulation.country.name }} flag" class="country-flag">
+                                    <!-- {{ regulation.country.name }}  -->
+                                    {{ regulation.regulation }}
+                                </div>
+                                <div class="collapsible-content" style="display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                                    <p class="section"><strong>Regulation :</strong> {{ regulation.regulation }}</p>
+                                    <div class="section"><strong>Received Information Date :</strong> {{ regulation.received_information_date |date:"d M Y"  }}</div>
+                                    <p class="section"><strong>Days until expiry :</strong> {{ regulation.days_until_expiry }} days</p>
+                                    <p class="section"><strong>Mandatory/Voluntary :</strong> {{ regulation.mandatory_voluntory }}</p>
+                                    <p class="section"><strong>Standard :</strong> {{ regulation.standard }}</p>
+                                    <div class="section"><strong>Effective Date :</strong> {{ regulation.effective_date |safe  }}</div>
+                                    <div class="section"><strong>MCP Action :</strong> {{ regulation.action|safe }}</div>
+                                    <div class="section"><strong>Scope :</strong> {{ regulation.scope|safe }}</div>
+                                    <div class="section"><strong>Detail :</strong> {{ regulation.detail|safe }}</div>
+                                    <div class="section"><strong>Type :</strong> {{ regulation.type }}</div>
+                                    <p class="section"><strong>By :</strong> {{ regulation.by |safe }}</p>
+                                    <div class="section"><strong>Remark :</strong> {{ regulation.remark |safe }}</div>
+                                    
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<style>
+
+    .status-counts {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f7f7f7;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .status-counts p {
+        font-size: 16px;
+        margin: 5px 0;
+    }
+
+    .status-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    margin: 10px 0;
+    }
+
+    .status-divider {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 10px 0;
+    }
+
+    .country-flag {
+        width: 20px; /* Adjust the size as needed */
+        height: auto;
+        margin-right: 10px; /* Space between the flag and text */
+        vertical-align: middle;
+    }
+
+    .active {
+        background-color: #cce5ff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .active-header {
+        background-color: #cce5ff ;
+    }
+
+    .section {
+        color: #555555;
+        padding: 5px 0;
+        border-bottom: 1px solid #ddd;
+    }
+
+    /* Accordion style */
+    .collapsible-card {
+        background-color: #d6d6d6;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 5px;
+    }
+
+    .collapsible-header {
+        background-color: #fdfdf2;
+        color: rgb(0, 0, 0);
+        padding: 20px;
+        font-size: 18px;
+        font-weight: 400;
+        transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    .collapsible-content {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 16px;
+        
+    }
+    .collapsible-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .collapsible-header:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .accordion-symbol {
+        font-size: 1.5em;
+        transition: transform 0.3s ease;
+        margin-right: 20px;
+    }
+
+    .collapsible-card.is-expanded .accordion-symbol {
+        transform: rotate(-225deg);
+    }
+
+    .overdue-status { background-color: #343a40; color: white; padding: 5px; }
+    .critical-status { background-color: #f7b4bb; padding: 5px; }
+    .serious-status { background-color: #ffe5cc; padding: 5px; }
+    .caution-status { background-color: #f5f4b8; padding: 5px; }
+    .inprogress-status { background-color: #ccffcc; padding: 5px; }
+    .finished-status { background-color: #7e7e7e; color: white; padding: 5px;}
+
+</style>
+
+
+<script>
+
+
+    // Function to toggle collapsible content
+    function toggleCollapsible(element) {
+    var content = element.nextElementSibling;
+    var parentCard = element.parentNode;
+    var isCollapsed = content.style.display === "none" || content.style.maxHeight === "0px";
+    
+    if (isCollapsed) {
+        content.style.display = "block";
+        content.style.maxHeight = content.scrollHeight + "px";
+        parentCard.classList.add('is-expanded');
+    } else {
+        content.style.maxHeight = "0";
+        setTimeout(function() {
+            content.style.display = "none";
+        }, 150); // matches the transition time
+        parentCard.classList.remove('is-expanded');
+    }
+}
+
+
+    // Function to search country cards
+    function searchCards() {
+        var input, filter, cards, card, countryName;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        cards = document.getElementsByClassName("country-card");
+
+        for (var i = 0; i < cards.length; i++) {
+            card = cards[i];
+            countryName = card.getAttribute("data-name");
+            if (countryName.toUpperCase().indexOf(filter) > -1) {
+                card.style.display = "";
+            } else {
+                card.style.display = "none";
+            }
+        }
+    }
+
+
+    // Function to filter regulations by country
+    function filterbyCountry(countryId , element) {
+    var cards, i;
+    cards = document.getElementsByClassName("regulation-card");
+
+    // Remove active class from all country cards
+    var countryCards = document.getElementsByClassName("country-card");
+    for (i = 0; i < countryCards.length; i++) {
+        countryCards[i].classList.remove("active");
+    }
+
+    // Add active class to the clicked country card
+    element.classList.add("active");
+
+    // Filter regulations by country
+    var overdueCount = 0, criticalCount = 0, seriousCount = 0, cautionCount = 0, inprogressCount = 0, finishedCount = 0;
+    for (i = 0; i < cards.length; i++) {
+        if (countryId === 'all' || cards[i].getAttribute("data-country-id") == countryId) {
+            cards[i].style.display = "";
+            
+            // Increment counts based on regulation status
+            if (cards[i].classList.contains('overdue-status')) {
+                overdueCount++;
+            } else if (cards[i].classList.contains('critical-status')) {
+                criticalCount++;
+            } else if (cards[i].classList.contains('serious-status')) {
+                seriousCount++;
+            } else if (cards[i].classList.contains('caution-status')) {
+                cautionCount++;
+            } else if (cards[i].classList.contains('inprogress-status')) {
+                inprogressCount++;
+            } else if (cards[i].classList.contains('finished-status')) {
+                finishedCount++;
+            }
+
+        } else {
+            cards[i].style.display = "none";
+        }
+    }
+
+    // Update the status counts in the UI
+    document.getElementById("overdueCount").textContent = overdueCount;
+    document.getElementById("criticalCount").textContent = criticalCount;
+    document.getElementById("seriousCount").textContent = seriousCount;
+    document.getElementById("cautionCount").textContent = cautionCount;
+    document.getElementById("inprogressCount").textContent = inprogressCount;
+    document.getElementById("finishedCount").textContent = finishedCount;
+
+    // Update the title based on the selected country
+    var titleElement = document.getElementById("regulationsTitle");
+    var countryName = element.getAttribute("data-name");
+    if (countryId === 'all') {
+        titleElement.textContent = "All Regulations";
+    } else {
+        titleElement.textContent = "Regulations of " + countryName;
+    }
+}
+
+// Automatically select 'all' when the page loads
+window.onload = function() {
+    // Find the element for "all" countries and pass it to filterbyCountry
+    var allCountriesElement = document.querySelector('.country-card[data-country-id="all"]');
+    filterbyCountry('all', allCountriesElement);
+};
+
+
+var selectedStatus = "all";  // ตัวแปรเก็บสถานะที่ถูกเลือก
+var selectedCountryId = "all";  // ตัวแปรเก็บ country ที่ถูกเลือก
+
+
+// Function to filter regulations by country
+function filterbyCountry(countryId, element) {
+    selectedCountryId = countryId;  // อัพเดทตัวแปร selectedCountryId ตาม country ที่เลือก
+    applyFilters();  // เรียกใช้ฟังก์ชันกรองข้อมูล
+    // Add active class to the clicked country card
+    var countryCards = document.getElementsByClassName("country-card");
+    for (i = 0; i < countryCards.length; i++) {
+        countryCards[i].classList.remove("active");
+    }
+    element.classList.add("active");
+
+    // Update the title based on the selected country
+    var titleElement = document.getElementById("regulationsTitle");
+    var countryName = element.getAttribute("data-name");
+    if (countryId === 'all') {
+        titleElement.textContent = "All Regulations";
+    } else {
+        titleElement.textContent = "Regulations of " + countryName;
+    }
+}
+
+
+
+// Function to filter regulations by status
+function filterByStatus() {
+    selectedStatus = document.getElementById("statusFilter").value;  // อัพเดทตัวแปร selectedStatus
+    applyFilters();  // เรียกใช้ฟังก์ชันกรองข้อมูล
+}
+
+
+// Function to apply both country and status filters
+function applyFilters() {
+    var cards = document.getElementsByClassName("regulation-card");
+    var overdueCount = 0, criticalCount = 0, seriousCount = 0, cautionCount = 0, inprogressCount = 0, finishedCount = 0;
+    var searchFilter = document.getElementById("regulationSearchInput").value.toUpperCase();
+
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var cardCountryId = card.getAttribute("data-country-id");
+        var cardStatus = card.classList;
+        var regulationText = card.textContent || card.innerText;
+
+        // เงื่อนไขกรองทั้งประเทศและสถานะ
+        var showByCountry = (selectedCountryId === 'all' || cardCountryId == selectedCountryId);
+        var showByStatus = (selectedStatus === 'all' || cardStatus.contains(selectedStatus + '-status'));
+        var showBySearch = (searchFilter === '' || regulationText.toUpperCase().indexOf(searchFilter) > -1);
+        if (showByCountry && showByStatus  && showBySearch) {
+            cards[i].style.display = "";
+            
+            // นับจำนวนตาม status
+            if (cardStatus.contains('overdue-status')) {
+                overdueCount++;
+            } else if (cardStatus.contains('critical-status')) {
+                criticalCount++;
+            } else if (cardStatus.contains('serious-status')) {
+                seriousCount++;
+            } else if (cardStatus.contains('caution-status')) {
+                cautionCount++;
+            } else if (cardStatus.contains('inprogress-status')) {
+                inprogressCount++;
+            } else if (cardStatus.contains('finished-status')) {
+                finishedCount++;
+            }
+        } else {
+            cards[i].style.display = "none";
+        }
+    }
+
+    // Update the status counts in the UI
+    document.getElementById("overdueCount").textContent = overdueCount;
+    document.getElementById("criticalCount").textContent = criticalCount;
+    document.getElementById("seriousCount").textContent = seriousCount;
+    document.getElementById("cautionCount").textContent = cautionCount;
+    document.getElementById("inprogressCount").textContent = inprogressCount;
+    document.getElementById("finishedCount").textContent = finishedCount;
+
+    // Check if each count is zero and hide the corresponding status section
+    document.querySelector('.overdue-status').style.display = overdueCount > 0 ? '' : 'none';
+    document.querySelector('.critical-status').style.display = criticalCount > 0 ? '' : 'none';
+    document.querySelector('.serious-status').style.display = seriousCount > 0 ? '' : 'none';
+    document.querySelector('.caution-status').style.display = cautionCount > 0 ? '' : 'none';
+    document.querySelector('.inprogress-status').style.display = inprogressCount > 0 ? '' : 'none';
+    document.querySelector('.finished-status').style.display = finishedCount > 0 ? '' : 'none';
+}
+
+
+
+        
+</script>
+
+{% endblock %}
+
