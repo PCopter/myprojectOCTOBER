@@ -1,0 +1,25 @@
+cd myproject
+python manage.py runserver
+redis-server
+celery -A myproject beat -l info
+celery -A myproject worker --pool=gevent -l info
+
+celery -A myproject worker --pool=eventlet -l info(ไม่ใช่แล้ว)
+python manage.py shell
+
+SECRET_KEY = django-insecure-0a=jfn!oiy!p736*)8m7vd6f7lx8lg5i+t11+g=%k-t1hpr_)w
+
+DEBUG = True
+
+DB_NAME = django_certifications
+
+DB_USER = root
+
+DB_PASSWORD = cC.053346532
+
+DB_HOST = 127.0.0.1
+
+DB_PORT = 3306
+
+
+
