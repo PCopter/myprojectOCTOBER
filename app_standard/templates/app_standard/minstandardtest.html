@@ -1,0 +1,345 @@
+{% extends 'app_general/components/base.html'%}
+
+{% block site_title %}
+Minimum Standard Test
+{% endblock %}
+      
+{% block content %}
+<section class="content-section content-section-single">
+    <div class="content-container">
+        <h2 class=" text-center " style="margin-bottom: 30px;">Minimum Standard Testing requirement (Unit) of each country</h2>
+
+        <!-- Icons for abbreviation and filter -->
+        <div class="icon-container text-right">
+            <i class="fa fa-book" id="abbreviation-icon" title="Abbreviation Definitions"></i>
+            <i class="fa fa-filter" id="filter-icon" title="Filter"></i>
+        </div>
+
+
+        <!-- Abbreviation Definitions Popup -->
+        <div id="abbreviation-popup" class="popup">
+            <div class="popup-content">
+                <span class="close-popup" id="close-abbreviation">&times;</span>
+                <h2>Abbreviation Definitions</h2>
+                <ul>
+                    <li><strong>V</strong>: Voluntary mark</li>
+                    <li><strong>M</strong>: Mandatory mark</li>
+                    <li><strong>S</strong>: Sampling test</li>
+                    <li><strong>R</strong>: Routine test</li>
+                    {% for requirement in requirements %}
+                        <li><strong>{{ requirement.code }}</strong>: {{ requirement.description }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Filter Popup -->
+        <div id="filter-popup" class="popup">
+            <div class="popup-content">
+                <span class="close-popup" id="close-filter">&times;</span>
+                <h2>Filter Criteria</h2>
+                <form id="filter-form">
+                    <label for="country">Country:</label>
+                    <select id="country" name="country">
+                        <option value="">-- Select Country --</option>
+                        {% for country in countries %}
+                            <option value="{{ country.id }}">{{ country.name }}</option>
+                        {% endfor %}
+                    </select><br>
+        
+                    <label for="item_test">Item Test:</label>
+                    <select id="item_test" name="item_test">
+                        <option value="">-- Select Item Test --</option>
+                        {% for item_test in item_tests %}
+                            <option value="{{ item_test.id }}">{{ item_test.name }}</option>
+                        {% endfor %}
+                    </select><br>
+        
+                    <!-- <label for="type">Type:</label>
+                    <select id="type" name="type">
+                        <option value="">-- Select Type --</option>
+                        <option value="S">Sampling Test</option>
+                        <option value="R">Routine Test</option>
+                    </select><br> -->
+        
+                    <button type="button" id="apply-filter" style="margin-top: 10px;">Apply Filter</button>
+                    <button type="button" id="reset-filter" style="margin-top: 10px; margin-left: 10px;">Reset Filter</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table: Item Tests, Specifications, and Requirements -->
+        <section>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="text-center">No.</th>
+                            <th class="text-center">Item Test</th>
+                            <th class="text-center">Specifications</th>
+                            <th class="text-center">Type</th>
+                            <th class="text-center">M/N</th>
+                            {% for country in countries %}
+                                <th class="country-header" data-country-id="{{ country.id }}">{{ country.name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item_test in item_tests %}
+                            {% for spec in item_test.specifications.all %}
+                            <tr>
+                                {% if forloop.first %}
+                                    <!-- Display No. and Item Test only for the first specification -->
+                                    <td class="text-center" rowspan="{{ item_test.specifications.count }}">{{ item_test.no }}</td>
+                                    <td class="text-center" rowspan="{{ item_test.specifications.count }}">{{ item_test.name }}</td>
+                                {% endif %}
+        
+                                <td class="specifications">{{ spec.description|safe }}</td>
+                                <td class="text-center">{{ spec.get_test_type_display }}</td>
+                                <td>{{ spec.get_mandatory_voluntory_display }}</td>
+        
+                                {% for country in countries %}
+                                    <td class="text-center country-col-{{ forloop.counter }}">
+                                        {% for requirement in country_test_requirements %}
+                                            {% if requirement.country.id == country.id and requirement.specification.id == spec.id %}
+                                                {{ requirement.requirement.code }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                {% endfor %}
+
+                                
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Table: Product Scopes -->
+        <section>
+            <h2 class="text-center" style="margin: 15px;">Product Scope</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Standard</th>
+                        <th>Country</th>
+                        <th>Scope</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scope in product_scopes %}
+                    <tr>
+                        <td>{{ scope.standard }}</td>
+                        <td>{{ scope.country.name }}</td>
+                        <td>{{ scope.scope|safe }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section> 
+    </div>
+</section>
+
+<!-- JavaScript for handling pop-ups -->
+<script>
+    // Get elements
+    const abbreviationIcon = document.getElementById('abbreviation-icon');
+    const abbreviationPopup = document.getElementById('abbreviation-popup');
+    const closeAbbreviation = document.getElementById('close-abbreviation');
+
+    const filterIcon = document.getElementById('filter-icon');
+    const filterPopup = document.getElementById('filter-popup');
+    const closeFilter = document.getElementById('close-filter');
+
+    // Show Abbreviation popup
+    abbreviationIcon.addEventListener('click', function() {
+        abbreviationPopup.style.display = 'block';
+    });
+
+    // Hide Abbreviation popup
+    closeAbbreviation.addEventListener('click', function() {
+        abbreviationPopup.style.display = 'none';
+    });
+
+    // Show Filter popup
+    filterIcon.addEventListener('click', function() {
+        filterPopup.style.display = 'block';
+    });
+
+    // Hide Filter popup
+    closeFilter.addEventListener('click', function() {
+        filterPopup.style.display = 'none';
+    });
+
+    // Close popup when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target == abbreviationPopup) {
+            abbreviationPopup.style.display = 'none';
+        } else if (event.target == filterPopup) {
+            filterPopup.style.display = 'none';
+        }
+    });
+
+
+
+     // JavaScript for filtering
+    document.getElementById('apply-filter').addEventListener('click', function() {
+    const selectedCountry = document.getElementById('country').value;
+    const selectedItemTest = document.getElementById('item_test').value;
+    // const selectedType = document.getElementById('type').value;
+
+    // Update the URL to pass filters via GET request to the server
+    let url = new URL(window.location.href);
+    url.searchParams.set('country', selectedCountry || '');
+    url.searchParams.set('item_test', selectedItemTest || '');
+    // url.searchParams.set('type', selectedType || '');
+
+    // Reload the page with filtered data from the server
+    window.location.href = url.toString();
+});
+
+    // JavaScript for resetting the filter
+    document.getElementById('reset-filter').addEventListener('click', function() {
+        // Clear all the GET parameters from the URL and reload the page
+        let url = new URL(window.location.href);
+        url.searchParams.delete('country');
+        url.searchParams.delete('item_test');
+        // url.searchParams.delete('type');
+
+        // Reload the page with no filter (clean state)
+        window.location.href = url.origin + url.pathname;
+    });
+
+    // Optional: Reset filters when refreshing the page
+    window.onbeforeunload = function() {
+        // Clear all filters when the page is refreshed
+        let url = new URL(window.location.href);
+        url.searchParams.delete('country');
+        url.searchParams.delete('item_test');
+        // url.searchParams.delete('type');
+        window.location.href = url.origin + url.pathname;
+    };
+
+</script>
+
+<!-- CSS Styles -->
+<style>
+    /* Adding colors to country columns */
+    {% for country in countries %}
+        .country-col-{{ forloop.counter }} {
+            background-color: {% cycle '#FCF9E2' '#e6f7ff' '#ffe6e6' '#e6ffe6' %};
+        }
+    {% endfor %}
+    
+
+    /* Center the title and align icons on the right */
+    .content-title {
+        display: inline-block;
+        margin-right: auto;
+        margin-left: auto;
+        padding: 10px 0;
+    }
+
+    .icon-container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: -25px; /* Adjust this value to move icons closer to the title */
+        margin-bottom: 5px;
+        
+    }
+
+    /* Style the icons */
+    .icon-container i {
+        font-size: 1.5em; /* Adjust icon size */
+        margin-left: 15px; /* Space between icons */
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 10%;
+        border: solid 3px rgb(39, 39, 39);
+        background-color: #d4d4d4;
+    }
+
+    /* Add hover effect to icons */
+    .icon-container i:hover {
+        color: #007bff; /* Change color on hover */
+        background-color: #fff;
+    }
+
+    /* Popup styling */
+    .popup {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .popup-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+    }
+
+    .close-popup {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close-popup:hover,
+    .close-popup:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    /* Styling for fixed header */
+    .table-container {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0px;
+    }
+
+    th, td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        background-color: #f2f2f2;
+        z-index: 1;
+    }
+
+    .country-header {
+        writing-mode: vertical-lr;
+        text-align: center;
+    }
+
+    /* For visual grouping of merged rows */
+    .specifications {
+        text-align: left;
+    }
+    tr:hover td {
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3); /* Add subtle shadow for depth */
+    }
+</style>
+
+{% endblock %}
